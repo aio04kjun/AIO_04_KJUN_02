@@ -9,9 +9,11 @@ from app.report import save_report
 
 def main():
     p = parser(); p.add_argument("--manual", action="store_true"); args = p.parse_args()
+        
     records = read_catalog(args.data); request = sample_requests(records)[0]
     values = prepare_input(request, records); settings = Settings.read(args.mock)
     model = make_model(settings); prompt = get_prompt(); output_parser = StrOutputParser()
+    
     if args.manual:
         prompt_value = prompt.invoke(values)
         message = model.invoke(prompt_value)
