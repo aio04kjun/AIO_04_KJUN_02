@@ -15,7 +15,7 @@ def main():
             print(chunk, end="", flush=True); chunks.append(chunk)
         print(); rows = [{**inputs[0], "answer": "".join(chunks), "status": "ok", "execution": "stream"}]
     else:
-        outputs = chain.batch(inputs, config={"max_concurrency": 1}, return_exceptions=True)
+        outputs = chain.batch(inputs, config={"max_concurrency": 10}, return_exceptions=True)
         rows = [{**request, **({"status": "error", "error": friendly_error(output)} if isinstance(output, Exception)
                  else {"status": "ok", "answer": output}), "execution": "batch"} for request, output in zip(inputs, outputs)]
     save_report(6, records, rows, args.data, settings)
