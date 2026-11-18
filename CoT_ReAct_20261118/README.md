@@ -1,27 +1,37 @@
-# CoT·ReAct 실습 · 2026-11-18
+# 11월 18일 · CoT와 ReAct 8차시
 
-Python 3.11 이상. 압축을 풀고 main.py가 있는 폴더에서 실행합니다.
+course.html 또는 course.pdf를 연다.
 
-```bat
+압축을 풀고 이 파일이 있는 폴더에서 실행한다. Python 3.11 이상을 사용한다.
+
+Windows PowerShell
+```powershell
 py -3.12 -m venv .venv
-.venv\Scripts\activate
-python -m pip install -r requirements.txt
-copy .env.example .env
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe lesson.py
 ```
 
-PowerShell은 `.\.venv\Scripts\python.exe`를 직접 실행할 수 있습니다. macOS/Linux는 `python3 -m venv .venv`와 `source .venv/bin/activate`를 사용합니다.
+macOS / Linux
+```bash
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+.venv/bin/python lesson.py
+```
+
+API 실습은 .env.example을 .env로 복사하고 선택한 공급자의 API_KEY와 MODEL을 채운다. 위 실행 명령 끝에 --provider groq, --provider gemini 또는 --provider openai 중 하나를 붙인다. Groq·Gemini는 수업 계정에서 무료 한도가 확인된 모델을 사용한다. OpenAI는 유료 선택 실습이다.
+
+
+가상환경 Python으로 다음 파일을 실행한다. Windows에서 활성화하지 않았으면 python 대신 .\.venv\Scripts\python.exe를 사용한다.
 
 | 차시 | 내용 | 실행 |
-| --- | --- | --- |
-| 1 | GSM8K 원본과 입력 구분 | python main.py --session 1 |
-| 2 | 프롬프트 3종 구성 | python main.py --session 2 |
-| 3 | 풀이 응답 생성 | python main.py --session 3 --mock |
-| 4 | 실제 로컬 계산 | python main.py --session 4 |
-| 5 | ReAct 행동·관찰 | python main.py --session 5 --mock |
-| 6 | 동일 문제 3방식 비교 | python main.py --session 6 --count 1 --mock |
-| 7 | 오류와 반복 중단 | python main.py --session 7 |
-| 8 | 저장 결과 재출력 | python main.py --session 8 --input results/실제파일.json |
+|---|---|---|
+| 1 | 같은 문제에 CoT와 ReAct 적용하기 | `python lesson.py` |
+| 2 | 같은 질문에 두 가지 지시문 작성하기 | `python s02.py` |
+| 3 | 생성형 AI API로 풀이 비교하기 | `python s03.py` |
+| 4 | 계산 요청을 파이썬 함수에 연결하기 | `python s04.py` |
+| 5 | 도구의 반환값으로 다음 행동 결정하기 | `python s05.py` |
+| 6 | 같은 조건에서 세 방식 비교하기 | `python s06.py` |
+| 7 | 응답 오류와 반복 중단 재현하기 | `python s07.py` |
+| 8 | 실행 기록으로 비교 보고서 만들기 | `python s08.py` |
 
-실제 API는 --mock 대신 `--live --provider groq` 또는 `gemini`, `openai`를 선택합니다. .env에 선택한 공급자의 API_KEY·MODEL만 설정하세요. 기본 실행은 모의 대본이며 OpenAI 실제 호출은 유료입니다. Groq·Gemini는 계정/모델의 무료 사용 범위를 확인하세요.
-
-결과는 results/의 HTML·JSON입니다. 본 교안은 `CoT_ReAct_8Sessions.html`·PDF와 lessons/의 차시별 문서입니다. 제공 데이터는 D04 GSM8K main/test 원본 0~5번 행이며 data/provenance.json에서 위치를 확인할 수 있습니다.
+API 모드는 1·3·5·6차시에서 선택한다. 1차시 결과와 6·8차시 비교 기록은 results/에 저장되며 나머지 차시의 출력은 터미널에 표시된다.
