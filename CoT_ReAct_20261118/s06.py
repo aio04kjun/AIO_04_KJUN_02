@@ -3,6 +3,7 @@ import argparse
 from datetime import datetime
 import json
 import re
+import unicodedata
 from lesson import MAX_REACT_TURNS, ROOT, REACT
 from s02 import records, variants
 from s03 import MODES, RemoteChat, ask
@@ -82,7 +83,23 @@ if __name__ == "__main__":
     directory.mkdir(exist_ok=True)
     path = directory / f"compare_{datetime.now():%Y%m%d_%H%M%S_%f}.json"
     path.write_text(json.dumps(cases, ensure_ascii=False, indent=2), encoding="utf-8")
-    for item in cases:
-        print(item["row"], item["method"], item["status"], item["predicted"],
-              "API", item["api_requests"], "도구", item["tools"])
+    table = [["행", "방식", "판정", "예측값", "API", "도구"]]
+    table.extend([
+        str(item[key])
+        for key in ("row", "method", "status", "predicted", "api_requests", "tools")
+    ] for item in cases)
+
+    def width(text):
+        return sum(2 if unicodedata.east_asian_width(char) in "WF" else 1
+                   for char in text)
+
+    widths = [max(map(width, column)) for column in zip(*table)]
+    for index, row in enumerate(table):
+        print(" | ".join(
+            cell + " " * (size - width(cell))
+            for cell, size in zip(row, widths)
+        ))
+        if index == 0:
+            print("-+-".join("-" * size for size in widths))
+    print()
     print(path)
