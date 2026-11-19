@@ -195,7 +195,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("mode", choices=["inspect", "schema", "diagnose", "plain", "strict", "chain"])
     parser.add_argument("--dataset", choices=FILES, default="bank")
-    parser.add_argument("--provider", choices=MODELS, default="groq")
+    parser.add_argument("--provider", choices=MODELS, default="openai")
     parser.add_argument("--row", type=int, default=1)
     args = parser.parse_args()
     if args.mode == "chain" and args.provider != "openai":
