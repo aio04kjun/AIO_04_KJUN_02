@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="서해·동해·남해의 날씨와 내 컨디션에 맞춰 바닷가 숙소, 관광, 힐링, 식사를 추천합니다.">
+  <title>물결여행 — 바닷가 여행 추천</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#planner">여행 계획으로 바로가기</a>
+  <header class="site-header">
+    <div class="shell header-inner">
+      <a class="wordmark" href="#top" aria-label="물결여행 첫 화면">물결여행<span>.</span></a>
+      <nav aria-label="주요 메뉴">
+        <a href="#forecast">7일 예보</a>
+        <a href="#stays">추천 숙소</a>
+        <a href="#routes">추천 코스</a>
+      </nav>
+      <a class="pill outline" href="#planner">여행 계획하기 <span aria-hidden="true">↗</span></a>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="shell hero-copy">
+        <p class="eyebrow">서해 <span>·</span> 동해 <span>·</span> 남해</p>
+        <h1 id="hero-title">오늘은 바다로.</h1>
+        <p>바다의 날씨와 오늘의 컨디션에 맞춰<br class="mobile-break"> 나만의 여행을 계획해 보세요.</p>
+      </div>
+      <div class="shell hero-photo"><img src="/assets/coast-dawn.png" alt="잔잔한 새벽 바다와 하얀 파도가 밀려드는 해안" fetchpriority="high"></div>
+    </section>
+
+    <section class="shell planner" id="planner" aria-labelledby="planner-title">
+      <div class="section-title">
+        <h2 id="planner-title">어느 바다로 갈까요?</h2>
+        <p>여행지와 컨디션을 고르고, 원하는 여행을 말해 주세요.</p>
+      </div>
+      <form id="trip-form">
+        <fieldset class="coasts">
+          <legend class="sr-only">여행지</legend>
+          <label><input type="radio" name="city" value="태안"><span><small>서해</small><b>태안</b></span></label>
+          <label><input type="radio" name="city" value="강릉" checked><span><small>동해</small><b>강릉</b></span></label>
+          <label><input type="radio" name="city" value="여수"><span><small>남해</small><b>여수</b></span></label>
+        </fieldset>
+        <label class="question" for="question">여행 질문</label>
+        <textarea id="question" name="question" rows="2" maxlength="500" required>오늘 강릉에서 1박 2일 바다 여행 코스를 추천해 줘.</textarea>
+        <div class="preferences">
+          <label for="condition">여행 컨디션
+            <select id="condition" name="condition">
+              <option>여유롭게</option><option>활동적으로</option><option>피곤해요</option>
+            </select>
+          </label>
+          <label for="provider">추천 모델
+            <select id="provider" name="provider">
+              <option value="Mock">Mock · 수업 데모</option><option value="Gemini">Gemini</option><option value="OpenAI">OpenAI</option>
+            </select>
+          </label>
+          <label for="weather-mode">예보 데이터
+            <select id="weather-mode" name="weather">
+              <option value="sample">예시 예보</option><option value="live">실시간 예보</option>
+            </select>
+          </label>
+        </div>
+        <div class="form-action"><button class="pill primary" id="submit" type="submit">여행 코스 추천받기 <span aria-hidden="true">↗</span></button></div>
+        <p id="status" class="status" role="status" aria-live="polite"></p>
+        <noscript><p>여행 추천을 사용하려면 브라우저에서 JavaScript를 켜 주세요.</p></noscript>
+      </form>
+    </section>
+
+    <div id="results" hidden>
+      <div class="shell result-intro" id="trip-heading" tabindex="-1">
+        <p class="eyebrow" id="result-region"></p>
+        <h2 id="result-title"></h2>
+        <p id="result-dates"></p>
+        <p id="summary" class="result-summary" hidden></p>
+      </div>
+
+      <section class="shell forecast" id="forecast" aria-labelledby="forecast-title">
+        <div class="section-title">
+          <h2 id="forecast-title">바다의 7일 예보</h2>
+          <p id="forecast-source"></p>
+        </div>
+        <p class="result-warning" id="forecast-warning" hidden></p>
+        <div class="forecast-grid" id="forecast-days"></div>
+        <p class="small-note">기온은 최저·최고(°C), 강수확률은 일 최고값입니다. 미세먼지와 초미세먼지는 일평균(µg/m³)이며, 값이 없는 날에는 —로 표시합니다.</p>
+      </section>
+
+      <section class="shell stays" id="stays" aria-labelledby="stays-title">
+        <div class="section-title">
+          <h2 id="stays-title">바다 가까운 숙소</h2>
+          <p id="stays-source"></p>
+        </div>
+        <p class="result-warning" id="stays-warning" hidden></p>
+        <div class="stay-grid" id="stay-cards"></div>
+      </section>
+
+      <section class="route-band" id="routes" aria-labelledby="routes-title">
+        <div class="shell">
+          <div class="section-title">
+            <h2 id="routes-title">날씨에 맞춘 여행 코스</h2>
+            <p>날짜를 선택하면 관광, 힐링, 식사 코스를 볼 수 있어요.</p>
+          </div>
+          <div id="route-days" class="day-buttons" aria-label="여행 날짜"></div>
+          <div id="route-panel" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <div class="shell trace-row">
+        <details>
+          <summary>수업 실습 · 질문 분석과 도구 호출 보기</summary>
+          <dl id="intent"></dl>
+          <ol id="events"></ol>
+        </details>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="shell footer-inner">
+      <a class="wordmark" href="#top">물결여행<span>.</span></a>
+      <p>예보 <a href="https://open-meteo.com/en/docs">Open-Meteo</a> · 대기질 <a href="https://open-meteo.com/en/docs/air-quality-api">CAMS</a></p>
+      <a class="pill light" href="#top">맨 위로 <span aria-hidden="true">↑</span></a>
+    </div>
+  </footer>
+</body>
+</html>

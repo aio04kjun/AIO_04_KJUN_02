@@ -1,0 +1,4 @@
+# Mock 모드는 Python 표준 라이브러리만 사용합니다.
+langchain==1.5.0
+langchain-openai==1.8.0
+langchain-google-genai==4.5.0
