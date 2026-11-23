@@ -2,7 +2,7 @@
 # 모델이 잘못된 타입이나 규칙위반(할인율 0.9 또는 음수금액)을 넘길때 예외를 던져 프로그램이 죽으면
 # 사용자 경험이 끊깁니다.
 # 대신 도구실행 중 발생한 검증 오류, 파싱오류를 role=tool 메시지로 모델에게 돌려준다
-# 모델이 적합한 툴을 다시 찾거나 사용자에게 재입력을 요구하는 자기교정 루프를 만들수 있다
+# 모델이 적합한 툴을 다시 찾거나 사용자게에 재입력을 요구하는 자기교정 루프를 만들수 있다
 
 import json
 from dotenv import load_dotenv
@@ -15,10 +15,10 @@ client = OpenAI()
 def apply_policy_discount(amount: float, discount_rate: float) -> dict:
     if amount <= 0:
         raise ValueError("금액(amount)은 0보다 커야 합니다.")
-    if not (0.0 <= discount_rate <= 0.8):
+    if not (0.0 <= discount_rate <= 0.5):
         raise ValueError(
-            f"할인율 {discount_rate}는 정책 허용 범위(0.0~0.8)를 벗어났습니다. "
-            "0.0 이상 0.8 이하의 값으로 다시 호출하거나 사용자에게 범위 재입력을 요청하세요."
+            f"할인율 {discount_rate}는 정책 허용 범위(0.0~0.5)를 벗어났습니다. "
+            "0.0 이상 0.5 이하의 값으로 다시 호출하거나 사용자에게 범위 재입력을 요청하세요."
         )
     return {
         "original_amount": amount,
@@ -32,12 +32,12 @@ TOOLS = [
         "type": "function",
         "function": {
             "name": "apply_policy_discount",
-            "description": "금액에 할인율(0.0~0.8)을 적용합니다.",
+            "description": "금액에 할인율(0.0~0.5)을 적용합니다.",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "amount": {"type": "number", "description": "원화 금액"},
-                    "discount_rate": {"type": "number", "description": "할인율 (0.0~0.8)"},
+                    "discount_rate": {"type": "number", "description": "할인율 (0.0~0.5)"},
                 },
                 "required": ["amount", "discount_rate"],
             },
@@ -45,7 +45,7 @@ TOOLS = [
     }
 ]
 
-
+# 50,000원 상품에 할인율 0.8을 적용해줘.
 def run_with_self_correction(user_query: str, max_steps: int = 5) -> str:
     messages = [
         {
@@ -57,8 +57,9 @@ def run_with_self_correction(user_query: str, max_steps: int = 5) -> str:
         },
         {"role": "user", "content": user_query},
     ]
-
+    
     for step in range(1, max_steps + 1):
+        print('step :',step)
         res = client.chat.completions.create(
             model="gpt-4o-mini",
             temperature=0,
@@ -66,13 +67,14 @@ def run_with_self_correction(user_query: str, max_steps: int = 5) -> str:
             tools=TOOLS,
         )
         msg = res.choices[0].message
+        print('msg.tool_calls :',msg.tool_calls)
         if not msg.tool_calls:
             return msg.content or ""
 
         messages.append(msg)
         for call in msg.tool_calls:
             try:
-                args = json.loads(call.function.arguments)
+                args = json.loads(call.function.arguments)                
                 result = apply_policy_discount(**args)
                 payload = json.dumps(result, ensure_ascii=False)
                 print(f"  [Step {step}] 성공: {call.function.name}({args}) -> {payload}")
