@@ -432,6 +432,83 @@ def run_pipeline(question: str, settings: Settings, reference_date, *,
         return result
 
 
+def serve_web_ui(settings: Settings, *, port: int, reference_date=None) -> None:
+    """로컬 브라우저에 HTML과 조회 파이프라인을 제공합니다."""
+    from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+    root = Path(__file__).resolve().parent
+    page = (root / "index.html").read_bytes()
+
+    class Handler(BaseHTTPRequestHandler):
+        timeout = 10
+
+        def _send(self, status: int, media_type: str, body: bytes) -> None:
+            self.send_response(status)
+            self.send_header("Content-Type", media_type)
+            self.send_header("Content-Length", str(len(body)))
+            self.send_header("Cache-Control", "no-store")
+            self.send_header("X-Content-Type-Options", "nosniff")
+            self.send_header("X-Frame-Options", "DENY")
+            self.end_headers()
+            self.wfile.write(body)
+
+        def _json(self, status: int, payload: dict) -> None:
+            self._send(status, "application/json; charset=utf-8", json.dumps(payload, ensure_ascii=False).encode())
+
+        def _is_local(self) -> bool:
+            host = self.headers.get("Host")
+            allowed = {f"127.0.0.1:{self.server.server_port}", f"localhost:{self.server.server_port}"}
+            if host not in allowed or self.headers.get("Origin") not in {None, f"http://{host}"}:
+                self._json(403, {"message": "로컬 조회 콘솔 주소에서 요청해 주세요."})
+                return False
+            return True
+
+        def do_GET(self) -> None:
+            if not self._is_local():
+                return
+            path = urlsplit(self.path).path
+            if path == "/":
+                self._send(200, "text/html; charset=utf-8", page)
+            elif path == "/api/example":
+                try:
+                    report = json.loads((root / "dynamic_sql_test_report.json").read_text(encoding="utf-8-sig"))
+                    case = next(case for case in report["cases"] if case["passed"] and "김가온의" in case["question"])
+                except (OSError, ValueError, KeyError, StopIteration):
+                    self._json(404, {"message": "저장된 예제 결과를 찾을 수 없습니다."})
+                else:
+                    self._json(200, {"question": case["question"], "result": case["actual"]})
+            else:
+                self._json(404, {"message": "페이지를 찾을 수 없습니다."})
+
+        def do_POST(self) -> None:
+            if not self._is_local():
+                return
+            if self.path != "/api/query":
+                self._json(404, {"message": "페이지를 찾을 수 없습니다."})
+                return
+            if self.headers.get_content_type() != "application/json":
+                self._json(415, {"message": "JSON으로 질문을 보내 주세요."})
+                return
+            try:
+                length = int(self.headers.get("Content-Length", "0"))
+                if not 0 < length <= 12_000:
+                    raise ValueError
+                payload = json.loads(self.rfile.read(length))
+                question = payload.get("question") if isinstance(payload, dict) else None
+                if not isinstance(question, str) or not question.strip() or len(question) > 1000:
+                    raise ValueError
+            except (ValueError, UnicodeError):
+                self._json(400, {"message": "질문은 1~1,000자로 입력해 주세요."})
+                return
+            reference = reference_date or datetime.now(timezone(timedelta(hours=9))).date()
+            result = run_pipeline(question.strip(), settings, reference)
+            self._json(200, result)
+
+    with ThreadingHTTPServer(("127.0.0.1", port), Handler) as server:
+        print(f"조회 콘솔 http://127.0.0.1:{server.server_port}", flush=True)
+        server.serve_forever()
+
+
 def main(argv: list[str] | None = None) -> int:
     """기본 실행은 전체 파이프라인이며 진단 모드는 명시적으로 선택합니다."""
     from intent_analysis import analyze_intent, parse_reference_date, run_intent_suite
@@ -447,6 +524,9 @@ def main(argv: list[str] | None = None) -> int:
     mode.add_argument("--pipeline", action="store_true", help="전체 파이프라인 실행 (기본값)")
     mode.add_argument("--analyze-intent", action="store_true", help="Gemini 의도 분석만 JSON으로 확인")
     mode.add_argument("--test-intents", action="store_true", help="Gemini 의도 분석 예제 8건 검증")
+    mode.add_argument("--web", action="store_true", help="로컬 HTML 조회 콘솔 실행")
+    parser.add_argument("--port", type=int, default=8765, help="웹 콘솔 포트 (기본 8765)")
+    parser.add_argument("--env-file", type=Path, default=ENV_PATH, help="기존 .env 파일을 지정합니다.")
     parser.add_argument("--db-path", help="SQLite 파일 경로. 기본값: company.sqlite3")
     parser.add_argument("--reference-date", help="기준일 YYYY-MM-DD. 기본값: 한국 시간 오늘")
     args = parser.parse_args(argv)
@@ -456,6 +536,16 @@ def main(argv: list[str] | None = None) -> int:
     try:
         if args.db_path:
             os.environ["SQLITE_DB_PATH"] = args.db_path
+        if args.web:
+            if not 1 <= args.port <= 65535:
+                raise ValueError("포트는 1~65535 사이여야 합니다.")
+            web_reference = parse_reference_date(args.reference_date) if args.reference_date else None
+            try:
+                serve_web_ui(load_settings(args.env_file), port=args.port, reference_date=web_reference)
+            except OSError as error:
+                print(f"웹 콘솔을 실행할 수 없습니다. {error}")
+                return 1
+            return 0
         reference = (
             parse_reference_date(args.reference_date) if args.reference_date
             else datetime.now(timezone(timedelta(hours=9))).date()
@@ -465,7 +555,7 @@ def main(argv: list[str] | None = None) -> int:
         )
         if question is not None and not question.strip():
             raise ValueError("질문을 입력하세요.")
-        settings = load_settings()
+        settings = load_settings(args.env_file)
         if args.analyze_intent or args.test_intents:
             agent = create_agents(settings, names=("gemini",))["gemini"]
             with agent.client:

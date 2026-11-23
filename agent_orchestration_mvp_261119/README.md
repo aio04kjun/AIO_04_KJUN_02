@@ -11,6 +11,7 @@ Gemini가 질문의 의도와 조회 기간을 파악하고, 질문과 DB 스키
 | [custom_tools.py](custom_tools.py) | SQLite 생성 및 조회, SQL 실행 제한, Tool 등록 |
 | [requirements.txt](requirements.txt) | 설치할 라이브러리의 버전 |
 | [company.sqlite3](company.sqlite3) | 가상 직원 100명과 법인카드 거래 1,000건 |
+| [index.html](index.html) | 질문, 최종 답변, 실행 SQL을 확인하는 로컬 웹 화면 |
 | `.env` | 이 폴더에 직접 만드는 로컬 API 키·모델 설정 파일 |
 | `test_*.py`, `*_report.json` | 오프라인 회귀 테스트와 이전 API 검증 기록 |
 
@@ -126,7 +127,19 @@ OPENAI_MODEL=your_available_openai_model
 | `MAX_TOOL_ROUNDS` | `3`회 |
 | `SQLITE_DB_PATH` | `company.sqlite3`. 상대 경로는 프로젝트 폴더 기준 |
 
-### 질문하기와 조회 확인
+### 로컬 HTML 조회 콘솔
+
+프로젝트 폴더에서 아래 명령을 실행한 뒤 브라우저에서 [로컬 조회 콘솔](http://127.0.0.1:8765)을 엽니다.
+
+```cmd
+python -X utf8 main.py --web
+```
+
+첫 화면에는 저장된 예제 응답이 표시됩니다. 질문을 제출하면 같은 Gemini → SQLite → OpenAI 파이프라인이 실행됩니다. **실행 SQL과 결과**를 펼치면 조회 쿼리, 바인딩 값, 반환 데이터를 볼 수 있습니다. 서버를 종료하려면 CMD에서 `Ctrl+C`를 누르세요.
+
+프로젝트 폴더에 `.env`가 없다면 `--env-file 경로`로 기존 설정 파일을 지정할 수 있습니다. 기본 접속 주소는 현재 컴퓨터의 `127.0.0.1:8765`이며, 포트를 바꾸려면 `--port`를 사용하세요.
+
+### CMD에서 질문하기와 조회 확인
 
 ```cmd
 python -X utf8 custom_tools.py --init-db
