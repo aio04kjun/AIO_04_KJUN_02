@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#050c17">
+<title>와인 페어링 랩 — 페어링 테스트 데스크</title>
+<style>
+  :root{
+    color-scheme: dark;
+    --bg:#050c17;
+    --bg-deep:#03080f;
+    --surface:#0b1626;
+    --surface-2:#101f33;
+    --surface-3:#152942;
+    --line:rgba(143,190,225,0.16);
+    --line-strong:rgba(150,205,240,0.32);
+    --ink:#e9f3fb;
+    --ink-soft:#d2e1f0;
+    --muted:#a2b8cd;
+    --muted-2:#8ea6bc;
+    --accent:#8fe3ff;
+    --accent-strong:#c2f0ff;
+    --accent-ink:#03111d;
+    --danger:#ffb6aa;
+    --r-sm:8px;
+    --r:12px;
+    --r-lg:16px;
+    --shadow:0 22px 46px -30px rgba(0,0,0,0.95);
+    --font:"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR","Segoe UI",system-ui,-apple-system,sans-serif;
+    --dur:180ms;
+    --ease:cubic-bezier(.2,.7,.3,1);
+  }
+
+  *,*::before,*::after{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    font-family:var(--font);
+    font-size:16px;
+    line-height:1.62;
+    color:var(--ink);
+    background:
+      radial-gradient(1180px 620px at 50% -20%, rgba(28,76,114,0.52), rgba(5,12,23,0) 68%),
+      var(--bg);
+    -webkit-font-smoothing:antialiased;
+    word-break:keep-all;
+    overflow-wrap:anywhere;
+  }
+  [hidden]{display:none!important}
+
+  a{color:var(--accent)}
+  a:hover{color:var(--accent-strong)}
+  ::selection{background:rgba(143,227,255,0.28);color:#fff}
+
+  :where(a,button,input,select,textarea,summary,label):focus-visible{
+    outline:2px solid var(--accent);
+    outline-offset:2px;
+    border-radius:var(--r-sm);
+  }
+
+  .skip-link{
+    position:absolute;left:16px;top:-60px;z-index:60;
+    padding:10px 16px;border-radius:var(--r-sm);
+    background:var(--accent);color:var(--accent-ink);
+    font-size:.875rem;font-weight:700;text-decoration:none;
+    transition:top var(--dur) var(--ease);
+  }
+  .skip-link:focus{top:12px;color:var(--accent-ink)}
+
+  /* ── 상단 바 ─────────────────────────────── */
+  .topbar{
+    position:sticky;top:0;z-index:30;
+    background:rgba(5,12,23,0.72);
+    -webkit-backdrop-filter:blur(16px) saturate(130%);
+    backdrop-filter:blur(16px) saturate(130%);
+    border-bottom:1px solid var(--line);
+  }
+  .topbar-inner{
+    max-width:1180px;margin:0 auto;padding:0 24px;
+    min-height:62px;display:flex;align-items:center;justify-content:space-between;gap:16px;
+  }
+  .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);min-width:0}
+  .brand-mark{
+    flex:none;width:22px;height:22px;border-radius:50%;
+    border:1px solid rgba(143,227,255,0.55);
+    background:radial-gradient(circle at 32% 28%, rgba(143,227,255,0.5), rgba(143,227,255,0) 62%);
+    position:relative;
+  }
+  .brand-mark::after{
+    content:"";position:absolute;inset:-5px -9px;
+    border:1px solid rgba(143,227,255,0.22);border-radius:50%;
+    transform:rotate(-18deg);
+  }
+  .brand-text{display:grid;gap:1px;min-width:0}
+  .brand-name{display:block;font-size:.78rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
+  .brand-sub{display:block;font-size:.7rem;color:var(--muted-2);letter-spacing:.02em}
+  .nav-link{
+    flex:none;display:inline-flex;align-items:center;gap:6px;
+    min-height:36px;padding:0 14px;border-radius:999px;
+    border:1px solid var(--line-strong);
+    color:var(--ink-soft);text-decoration:none;font-size:.82rem;font-weight:600;
+    transition:border-color var(--dur) var(--ease),color var(--dur) var(--ease),background-color var(--dur) var(--ease);
+  }
+  @media (hover:hover){
+    .nav-link:hover{border-color:var(--accent);color:var(--accent-strong);background:rgba(143,227,255,0.07)}
+  }
+
+  /* ── 본문 ───────────────────────────────── */
+  main{max-width:1180px;margin:0 auto;padding:0 24px 72px}
+
+  .hero{
+    position:relative;overflow:hidden;
+    padding:44px 0 88px;
+  }
+  .eyebrow{
+    margin:0 0 14px;font-size:.72rem;font-weight:700;
+    letter-spacing:.24em;text-transform:uppercase;color:var(--accent);
+    opacity:.9;
+  }
+  .hero h1{
+    margin:0;font-size:clamp(2rem,4.6vw,3.05rem);line-height:1.16;
+    letter-spacing:-.018em;font-weight:800;color:#f3f9ff;
+  }
+  .lede{
+    margin:14px 0 0;max-width:56ch;
+    font-size:1rem;color:var(--muted);line-height:1.7;
+  }
+
+  .process{
+    list-style:none;margin:28px 0 0;padding:0;
+    display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;
+    counter-reset:step;
+  }
+  .process li{
+    position:relative;padding:12px 0 0;
+    border-top:1px solid var(--line);
+  }
+  .process li::before{
+    counter-increment:step;content:counter(step,decimal-leading-zero);
+    display:block;margin-bottom:6px;
+    font-size:.7rem;font-weight:700;letter-spacing:.18em;
+    color:var(--accent);opacity:.85;
+    font-variant-numeric:tabular-nums;
+  }
+  .step-name{display:block;font-size:.9rem;font-weight:700;color:var(--ink-soft);line-height:1.4}
+  .step-desc{display:block;margin-top:4px;font-size:.76rem;line-height:1.55;color:var(--muted-2)}
+
+  .planet{
+    position:absolute;left:0;right:0;bottom:-1px;width:100%;height:auto;
+    pointer-events:none;opacity:.9;
+  }
+
+  /* ── 2열 작업대 ─────────────────────────── */
+  .lab-grid{
+    display:grid;grid-template-columns:minmax(300px,368px) minmax(0,1fr);
+    gap:24px;align-items:stretch;
+  }
+  .panel{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--r-lg);
+    padding:24px;
+    box-shadow:var(--shadow);
+    min-width:0;
+  }
+  .panel h2{
+    margin:0;font-size:1.14rem;line-height:1.35;letter-spacing:-.01em;font-weight:700;color:#f2f9ff;
+  }
+  .panel-sub{margin:6px 0 0;font-size:.84rem;line-height:1.6;color:var(--muted-2);max-width:46ch}
+
+  .form-panel{background:linear-gradient(180deg,var(--surface) 0%,#0a1421 100%)}
+  .form-panel > h2{margin-bottom:2px}
+  .lab{display:grid;gap:18px;margin-top:20px}
+
+  .field{display:grid;gap:7px;min-width:0}
+  .field > label,.label-plain{
+    display:block;font-size:.85rem;font-weight:700;color:var(--ink-soft);letter-spacing:.005em;
+  }
+  .req{font-weight:600;color:var(--accent);font-size:.78rem}
+  .optional{font-weight:500;color:var(--muted-2);font-size:.78rem}
+  .hint{margin:0;font-size:.76rem;line-height:1.55;color:var(--muted-2)}
+
+  fieldset.field{border:0;margin:0;padding:0}
+  legend{display:block;padding:0;margin-bottom:8px;font-size:.85rem;font-weight:700;color:var(--ink-soft)}
+
+  textarea,input[type="file"],select{
+    width:100%;max-width:100%;
+    font-family:inherit;font-size:1rem;line-height:1.6;
+    color:var(--ink);background:var(--surface-2);
+    border:1px solid var(--line-strong);
+    border-radius:var(--r);
+    padding:12px 14px;
+    transition:border-color var(--dur) var(--ease),background-color var(--dur) var(--ease);
+  }
+  textarea{min-height:116px;resize:vertical}
+  textarea::placeholder{color:#7f95ab}
+  textarea:hover,input[type="file"]:hover,select:hover{border-color:rgba(143,227,255,0.45)}
+  textarea:focus,select:focus,input[type="file"]:focus{border-color:var(--accent);background:#0e1d30}
+
+  .select-wrap{position:relative;display:flex;align-items:center;min-width:0}
+  select{appearance:none;-webkit-appearance:none;padding-right:40px;cursor:pointer}
+  .icon{display:inline-block;width:1em;height:1em;flex:none}
+  .chevron{
+    position:absolute;right:14px;top:50%;transform:translateY(-50%);
+    font-size:16px;color:var(--muted);pointer-events:none;
+  }
+
+  .mode-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .mode-option{
+    display:flex;align-items:flex-start;gap:9px;
+    padding:11px 12px;border-radius:var(--r);
+    border:1px solid var(--line-strong);background:var(--surface-2);
+    cursor:pointer;transition:border-color var(--dur) var(--ease),background-color var(--dur) var(--ease);
+  }
+  .mode-option input{
+    flex:none;margin:3px 0 0;width:16px;height:16px;accent-color:var(--accent);cursor:pointer;
+  }
+  .mode-text{display:grid;gap:2px;min-width:0}
+  .mode-name{display:block;font-size:.85rem;font-weight:700;color:var(--ink-soft);line-height:1.35}
+  .mode-desc{display:block;font-size:.72rem;line-height:1.45;color:var(--muted-2)}
+  @media (hover:hover){
+    .mode-option:hover{border-color:rgba(143,227,255,0.45);background:#122438}
+  }
+  .mode-option:has(input:checked){border-color:rgba(143,227,255,0.62);background:rgba(143,227,255,0.07)}
+  .mode-option:has(input:checked) .mode-name{color:#fff}
+  .mode-option:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(143,227,255,0.14)}
+
+  .sample-row{display:flex;flex-wrap:wrap;gap:8px}
+  .btn-sample{
+    min-height:44px;padding:0 14px;border-radius:999px;
+    font-family:inherit;font-size:.875rem;font-weight:600;
+    color:var(--ink-soft);background:rgba(255,255,255,0.03);
+    border:1px solid var(--line-strong);
+    cursor:pointer;
+    transition:border-color var(--dur) var(--ease),background-color var(--dur) var(--ease),color var(--dur) var(--ease);
+  }
+  @media (hover:hover){
+    .btn-sample:hover{border-color:var(--accent);color:var(--accent-strong);background:rgba(143,227,255,0.09)}
+  }
+  .btn-sample:active{transform:translateY(1px)}
+
+  input[type="file"]{cursor:pointer;padding:9px 12px;color:var(--muted)}
+  input[type="file"]::file-selector-button{
+    margin-right:12px;padding:7px 12px;border-radius:var(--r-sm);
+    font-family:inherit;font-size:.83rem;font-weight:600;
+    color:var(--ink);background:rgba(143,227,255,0.10);
+    border:1px solid var(--line-strong);cursor:pointer;
+  }
+  @media (hover:hover){
+    input[type="file"]::file-selector-button:hover{border-color:var(--accent);background:rgba(143,227,255,0.18)}
+  }
+
+  .attachment{
+    display:flex;align-items:center;gap:12px;
+    padding:10px;margin-top:2px;
+    border:1px solid var(--line);border-radius:var(--r);
+    background:var(--surface-2);min-width:0;
+  }
+  #preview{
+    flex:none;height:62px;width:auto;max-width:96px;
+    object-fit:contain;border-radius:var(--r-sm);
+    background:var(--surface-3);border:1px solid var(--line);
+  }
+  #photo-name{
+    margin:0;min-width:0;font-size:.85rem;color:var(--ink-soft);
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+
+  .field-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+
+  #error{
+    margin:0;padding:11px 13px;border-radius:var(--r);
+    background:rgba(255,140,124,0.10);
+    border:1px solid rgba(255,150,136,0.42);
+    color:var(--danger);font-size:.84rem;line-height:1.55;
+  }
+
+  .btn-primary{
+    width:100%;min-height:50px;
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    font-family:inherit;font-size:1rem;font-weight:800;letter-spacing:.01em;
+    color:var(--accent-ink);background:var(--accent);
+    border:1px solid transparent;border-radius:var(--r);
+    cursor:pointer;
+    transition:background-color var(--dur) var(--ease),transform var(--dur) var(--ease),box-shadow var(--dur) var(--ease);
+    box-shadow:0 10px 26px -16px rgba(143,227,255,0.85);
+  }
+  @media (hover:hover){
+    .btn-primary:hover{background:var(--accent-strong)}
+  }
+  .btn-primary:active{transform:translateY(1px)}
+  .btn-primary:disabled{opacity:.5;cursor:not-allowed;box-shadow:none}
+
+  .btn-ghost{
+    flex:none;min-height:38px;padding:0 13px;border-radius:var(--r-sm);
+    font-family:inherit;font-size:.8rem;font-weight:600;
+    color:var(--ink-soft);background:transparent;
+    border:1px solid var(--line-strong);cursor:pointer;
+    transition:border-color var(--dur) var(--ease),color var(--dur) var(--ease),background-color var(--dur) var(--ease);
+  }
+  @media (hover:hover){
+    .btn-ghost:not(:disabled):hover{border-color:var(--accent);color:var(--accent-strong);background:rgba(143,227,255,0.08)}
+  }
+  .btn-ghost:disabled{opacity:.45;cursor:not-allowed;border-style:dashed}
+
+  /* ── 결과 패널 ──────────────────────────── */
+  .result-panel{
+    display:flex;flex-direction:column;gap:16px;min-height:100%;
+  }
+  .panel-head{
+    display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;
+    padding-bottom:16px;border-bottom:1px solid var(--line);
+  }
+  .panel-head > div{min-width:0}
+
+  #status{
+    display:flex;align-items:baseline;gap:8px;margin:0;
+    font-size:.86rem;line-height:1.6;color:var(--muted);
+  }
+  .dot{
+    flex:none;width:7px;height:7px;border-radius:50%;
+    background:var(--accent);opacity:.85;
+    transform:translateY(-1px);
+  }
+
+  #result{
+    display:grid;gap:16px;align-content:start;flex:1;
+    position:relative;min-width:0;
+  }
+  #result[aria-busy="true"]::before{
+    content:"";position:absolute;left:0;right:0;top:0;height:2px;border-radius:2px;
+    background:linear-gradient(90deg,rgba(143,227,255,0),var(--accent),rgba(143,227,255,0));
+    animation:scan 1.4s var(--ease) infinite;
+  }
+  @keyframes scan{
+    from{transform:translateX(-100%)}
+    to{transform:translateX(100%)}
+  }
+
+  #result .result-empty{
+    display:grid;gap:12px;justify-items:start;
+    padding:28px 4px 8px;max-width:54ch;
+  }
+  .empty-art{
+    width:68px;height:68px;
+    margin-bottom:2px;
+  }
+  #result .result-empty h3{
+    margin:0;font-size:1.04rem;line-height:1.45;font-weight:700;color:var(--ink-soft);
+  }
+  #result .result-empty p{margin:0;font-size:.9rem;line-height:1.7;color:var(--muted-2)}
+  #result ul.empty-preview{
+    list-style:none;margin:6px 0 0;padding:0;
+    display:flex;flex-wrap:wrap;gap:6px 8px;
+    font-size:.76rem;line-height:1.5;color:var(--muted-2);
+  }
+  #result ul.empty-preview li{
+    display:inline-flex;align-items:center;gap:6px;padding:4px 10px;
+    border-radius:999px;border:1px solid var(--line);
+    background:rgba(255,255,255,0.02);line-height:1.5;
+  }
+  .empty-preview li::before{
+    content:"";width:4px;height:4px;border-radius:50%;
+    background:var(--accent);opacity:.6;flex:none;
+  }
+
+  /* 결과 스크립트가 삽입하는 구조 */
+  #result h3{
+    margin:0 0 8px;font-size:.98rem;line-height:1.45;font-weight:700;color:var(--ink-soft);
+    letter-spacing:-.005em;
+  }
+  #result p{margin:0 0 8px;font-size:.95rem;line-height:1.7;color:var(--muted)}
+  #result p:last-child{margin-bottom:0}
+  #result ul{
+    margin:0;padding-left:1.1rem;
+    display:grid;gap:6px;
+    font-size:.92rem;line-height:1.65;color:var(--ink-soft);
+  }
+  #result ul li{padding-left:2px}
+  #result ul li::marker{color:var(--accent)}
+
+  .report{
+    padding:18px 18px 16px;border-radius:var(--r);
+    background:var(--surface-2);border:1px solid var(--line);
+  }
+  .report > h3:first-child{padding-bottom:10px;margin-bottom:12px;border-bottom:1px solid var(--line)}
+  .review{
+    padding:18px;border-radius:var(--r);
+    background:rgba(143,227,255,0.045);
+    border:1px solid rgba(143,227,255,0.20);
+  }
+  .review ul{list-style:disc}
+  .review li{color:var(--ink-soft)}
+  #result ul.meta{
+    display:flex;flex-wrap:wrap;gap:6px;list-style:none;
+    margin:0;padding:0;
+    font-size:.76rem;line-height:1.5;color:var(--muted-2);
+  }
+  #result ul.meta li{
+    padding:4px 10px;border-radius:999px;
+    border:1px solid var(--line);background:rgba(255,255,255,0.02);
+    line-height:1.5;
+  }
+
+  /* ── 가이드 ─────────────────────────────── */
+  .guide{
+    margin-top:24px;
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
+    overflow:hidden;
+  }
+  .guide summary{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:16px 20px;cursor:pointer;list-style:none;
+    font-size:.9rem;font-weight:700;color:var(--ink-soft);
+  }
+  .guide summary::-webkit-details-marker{display:none}
+  .guide summary::after{
+    content:"+";flex:none;font-size:1.1rem;font-weight:500;color:var(--accent);line-height:1;
+  }
+  .guide[open] summary::after{content:"–"}
+  @media (hover:hover){
+    .guide summary:hover{color:#fff}
+  }
+  .guide-body{
+    padding:0 20px 20px;
+    border-top:1px solid var(--line);
+    padding-top:16px;
+    display:grid;gap:10px;
+  }
+  .guide-body ul{
+    margin:0;padding-left:1.15rem;
+    display:grid;gap:8px;
+    font-size:.84rem;line-height:1.65;color:var(--muted);
+  }
+  .guide-body li::marker{color:var(--accent)}
+  .guide-body strong{color:var(--ink-soft);font-weight:700}
+
+  /* ── 반응형 ─────────────────────────────── */
+  @media (max-width:1023px){
+    .lab-grid{grid-template-columns:minmax(0,1fr);gap:18px}
+    .hero{padding:34px 0 76px}
+    .process{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 12px}
+    .result-panel{min-height:0}
+    #result{min-height:320px}
+  }
+  @media (max-width:639px){
+    .topbar-inner{padding:0 16px;min-height:56px}
+    main{padding:0 16px 56px}
+    .hero{padding:26px 0 64px}
+    .lede{margin-top:10px;font-size:.94rem}
+    .panel{padding:18px;border-radius:var(--r)}
+    .lab{gap:16px;margin-top:16px}
+    .hero h1{font-size:clamp(1.7rem,7.4vw,2.2rem)}
+    .field-row{grid-template-columns:minmax(0,1fr)}
+    #result{min-height:280px}
+    .empty-preview li{font-size:.74rem}
+    .panel-head{padding-bottom:14px}
+  }
+  @media (max-width:399px){
+    .mode-grid{grid-template-columns:minmax(0,1fr)}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{
+      animation-duration:.001ms!important;
+      animation-iteration-count:1!important;
+      transition-duration:.001ms!important;
+      scroll-behavior:auto!important;
+    }
+  }
+</style>
+  <script src="lab.js" defer></script>
+</head>
+<body>
+<a class="skip-link" href="#lab">본문으로 바로 가기</a>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="#top">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span class="brand-text">
+        <span class="brand-name">Wine Pairing Lab</span>
+        <span class="brand-sub">페어링 테스트 데스크</span>
+      </span>
+    </a>
+    <a class="nav-link" href="#guide">가이드</a>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero" aria-labelledby="page-title">
+    <p class="eyebrow">Tasting Workbench</p>
+    <h1 id="page-title">와인 페어링 랩</h1>
+    <p class="lede">
+      요리 설명과 선택 사진으로 풍미를 분석하고 리뷰를 찾아 후보를 비교한 뒤
+      한 병을 골라 드립니다. 예제 데이터로 먼저 흐름을 확인해 보세요.
+    </p>
+
+    <ol class="process" aria-label="처리 순서">
+      <li>
+        <span class="step-name">풍미 분석</span>
+        <span class="step-desc">재료와 조리법에서 단맛·산미·지방·향을 읽습니다</span>
+      </li>
+      <li>
+        <span class="step-name">리뷰 검색</span>
+        <span class="step-desc">실제 연동 시 리뷰 인덱스에서 근거를 찾습니다</span>
+      </li>
+      <li>
+        <span class="step-name">후보 비교</span>
+        <span class="step-desc">산도·바디·타닌·향을 기준으로 비교합니다</span>
+      </li>
+      <li>
+        <span class="step-name">최종 추천</span>
+        <span class="step-desc">한 병과 짧은 이유를 정리합니다</span>
+      </li>
+    </ol>
+
+    <svg class="planet" viewBox="0 0 1440 240" aria-hidden="true" focusable="false">
+      <path d="M-20 232 C 320 96 1120 96 1460 232" fill="none"
+            stroke="rgba(143,227,255,0.30)" stroke-width="1.4" stroke-linecap="round"/>
+    </svg>
+  </section>
+
+  <div class="lab-grid">
+    <section class="panel form-panel" aria-labelledby="lab-title">
+      <h2 id="lab-title">테스트 설정</h2>
+      <p class="panel-sub">테스트 모드와 유형을 선택하고 요리 설명을 입력하세요.</p>
+
+      <form id="lab" class="lab">
+        <fieldset class="field">
+          <legend>테스트 모드</legend>
+          <div class="mode-grid">
+            <label class="mode-option">
+              <input type="radio" name="mode" value="demo" checked>
+              <span class="mode-text">
+                <span class="mode-name">예제 모드</span>
+                <span class="mode-desc">고정 데이터로 즉시 동작</span>
+              </span>
+            </label>
+            <label class="mode-option">
+              <input type="radio" name="mode" value="live">
+              <span class="mode-text">
+                <span class="mode-name">실제 연동</span>
+                <span class="mode-desc">OpenAI · Pinecone 호출</span>
+              </span>
+            </label>
+          </div>
+        </fieldset>
+        <p id="mode-hint" class="hint">
+          예제 모드는 준비된 고정 데이터를 쓰므로 네트워크 요청과 API 사용료가 없습니다.
+        </p>
+
+        <div class="field">
+          <label for="test">테스트 종류</label>
+          <div class="select-wrap">
+            <select id="test" name="test">
+              <option value="pairing" selected>전체 페어링 추천</option>
+              <option value="search">Pinecone 리뷰 검색만</option>
+            </select>
+            <svg class="icon chevron" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+              <path d="M4 6.5 8 10.5l4-4" fill="none" stroke="currentColor"
+                    stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <p class="hint">리뷰 검색에서는 와인 스타일과 요청 건수를 지정할 수 있습니다.</p>
+        </div>
+
+        <div class="field">
+          <p class="label-plain" id="sample-label">빠른 예제</p>
+          <div class="sample-row" role="group" aria-labelledby="sample-label">
+            <button type="button" class="btn-sample" data-sample="shrimp">버터 새우</button>
+            <button type="button" class="btn-sample" data-sample="risotto">버섯 리조또</button>
+            <button type="button" class="btn-sample" data-sample="photo">버거 사진</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="query">요리 설명 <span class="req">(필수)</span></label>
+          <textarea id="query" name="query" rows="4" maxlength="2000" required
+                    aria-describedby="query-hint"
+                    placeholder="예: 버터에 구운 새우, 레몬과 마늘, 가벼운 산미와 짭짤한 마무리"></textarea>
+          <p id="query-hint" class="hint">재료와 조리 방식, 느껴지는 풍미를 적어 주세요. 최대 2,000자.</p>
+        </div>
+
+        <div class="field" id="photo-fields">
+          <label for="photo">선택 사진 <span class="optional">(선택)</span></label>
+          <input id="photo" name="photo" type="file" accept="image/jpeg,.jpg,.jpeg"
+                 aria-describedby="photo-hint">
+          <p id="photo-hint" class="hint">JPG 파일, 최대 5MB. 실제 연동 시 사진을 풍미 분석에 사용합니다.</p>
+          <div id="attachment" class="attachment" hidden>
+            <img id="preview" alt="선택한 요리 사진 미리보기" width="72" height="72">
+            <p id="photo-name"></p>
+            <button id="remove" type="button" class="btn-ghost">제거</button>
+          </div>
+        </div>
+
+        <div id="search-fields" class="field-row" hidden>
+          <div class="field">
+            <label for="style">와인 스타일</label>
+            <div class="select-wrap">
+              <select id="style" name="style">
+                <option value="all" selected>전체</option>
+                <option value="red">레드</option>
+                <option value="white">화이트</option>
+                <option value="sparkling">스파클링</option>
+              </select>
+              <svg class="icon chevron" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                <path d="M4 6.5 8 10.5l4-4" fill="none" stroke="currentColor"
+                      stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </div>
+          <div class="field">
+            <label for="count">요청 건수</label>
+            <div class="select-wrap">
+              <select id="count" name="count">
+                <option value="1">1개</option>
+                <option value="2">2개</option>
+                <option value="3" selected>3개</option>
+                <option value="4">4개</option>
+                <option value="5">5개</option>
+              </select>
+              <svg class="icon chevron" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                <path d="M4 6.5 8 10.5l4-4" fill="none" stroke="currentColor"
+                      stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <p id="error" role="alert" hidden>
+          요리 설명이 비어 있습니다. 무엇을 먹는지 한두 문장 적은 뒤 다시 실행해 주세요.
+        </p>
+        <button id="run" type="submit" class="btn-primary">테스트 실행</button>
+      </form>
+    </section>
+
+    <aside class="panel result-panel" aria-labelledby="result-title">
+      <div class="panel-head">
+        <div>
+          <h2 id="result-title">결과</h2>
+          <p class="panel-sub">추천 보고서 또는 리뷰와 유사도 점수가 표시됩니다.</p>
+        </div>
+        <button id="copy" type="button" class="btn-ghost" disabled>결과 복사</button>
+      </div>
+
+      <p id="status" role="status">
+        <span class="dot" aria-hidden="true"></span>
+        아직 실행되지 않았습니다. 조건을 정하고 ‘테스트 실행’을 눌러 주세요.
+      </p>
+
+      <div id="result" aria-busy="false">
+        <div class="result-empty">
+          <svg class="empty-art" viewBox="0 0 96 96" aria-hidden="true" focusable="false">
+            <circle cx="48" cy="48" r="34" fill="none" stroke="rgba(143,227,255,0.24)" stroke-width="1"/>
+            <circle cx="48" cy="48" r="21" fill="none" stroke="rgba(143,227,255,0.13)" stroke-width="1"/>
+            <circle cx="48" cy="48" r="4" fill="rgba(143,227,255,0.78)"/>
+            <circle cx="77" cy="31" r="2.4" fill="rgba(194,240,255,0.9)"/>
+            <path d="M18 62 A34 34 0 0 0 78 62" fill="none"
+                  stroke="rgba(143,227,255,0.40)" stroke-width="1" stroke-linecap="round"/>
+          </svg>
+          <h3>아직 결과가 없습니다</h3>
+          <p>
+            요리 설명을 입력하거나 예제를 선택한 뒤 테스트를 실행해 보세요.
+          </p>
+          <ul class="empty-preview">
+            <li>풍미 분석</li>
+            <li>리뷰 근거</li>
+            <li>후보 비교</li>
+            <li>최종 추천</li>
+          </ul>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <details id="guide" class="guide">
+    <summary>가이드 — 예제 모드, 실제 연동, 사진 제한</summary>
+    <div class="guide-body">
+      <ul>
+        <li><strong>예제 모드</strong>는 미리 준비한 고정 데이터로 동작합니다. 네트워크 요청도 API 사용료도 없습니다.</li>
+        <li><strong>실제 연동</strong>은 OpenAI와 Pinecone을 사용하며, 호출량에 따라 API 사용료가 발생할 수 있습니다.</li>
+        <li><strong>사진</strong>은 JPG만 받고 5MB를 넘으면 업로드되지 않습니다. 설명만으로도 추천할 수 있습니다.</li>
+        <li><strong>리뷰 검색</strong>은 선택한 스타일의 결과가 2건 미만이면 전체 스타일에서 다시 검색합니다.</li>
+      </ul>
+    </div>
+  </details>
+</main>
+</body>
+</html>
