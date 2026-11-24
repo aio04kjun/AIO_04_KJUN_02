@@ -1,0 +1,10 @@
+langsmith
+langchain
+langchain-openai
+python-dotenv
+datasets
+pillow
+langchain-pinecone
+langchain-core
+pinecone
+pydantic
