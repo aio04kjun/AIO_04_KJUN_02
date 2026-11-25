@@ -1,0 +1,16 @@
+<figure id="embedding-meaning-map" aria-label="배송 질문 세 개는 왼쪽에 모여 있고, 비밀번호 질문은 오른쪽에 떨어져 있습니다.">
+  <style>
+    #embedding-meaning-map { position: relative; margin: 0; min-height: 11em; }
+    #embedding-meaning-map .point { position: absolute; display: flex; align-items: baseline; gap: .35em; margin: 0; color: var(--foreground); }
+    #embedding-meaning-map .mark { color: var(--viz-series-1, var(--foreground)); }
+    #embedding-meaning-map .query { top: 8%; left: 6%; font-weight: 500; }
+    #embedding-meaning-map .first { top: 29%; left: 12%; }
+    #embedding-meaning-map .second { top: 49%; left: 9%; }
+    #embedding-meaning-map .distant { bottom: 6%; right: 2%; }
+    #embedding-meaning-map .distant .mark { color: var(--muted-foreground); }
+  </style>
+  <p class="point query"><span class="mark" aria-hidden="true">◆</span> 내 택배 언제 와요?</p>
+  <p class="point first"><span class="mark" aria-hidden="true">●</span> 배송 예정일은 어떻게 확인하나요?</p>
+  <p class="point second"><span class="mark" aria-hidden="true">●</span> 주문한 물건은 며칠 뒤에 도착하나요?</p>
+  <p class="point distant"><span class="mark" aria-hidden="true">●</span> 비밀번호를 어떻게 바꾸나요?</p>
+</figure>
