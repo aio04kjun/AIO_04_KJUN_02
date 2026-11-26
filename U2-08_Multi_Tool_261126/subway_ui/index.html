@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#edf2f4">
+    <meta name="description" content="수도권 전철 노선도와 열차 위치, 역별 도착 정보">
+    <title>수도권 전철 관제도</title>
+    <link rel="stylesheet" href="/style.css">
+    <script defer src="/app.js"></script>
+</head>
+<body>
+    <a class="skip-link" href="#main">본문으로 건너뛰기</a>
+    <header class="masthead">
+        <div class="brand"><span class="brand-mark" aria-hidden="true"></span><h1>수도권 전철 관제도</h1></div>
+        <div class="clock"><span>서울 현재 시각</span><time id="clock" aria-label="서울 현재 시각"></time></div>
+    </header>
+    <main id="main" class="layout" tabindex="-1">
+        <section class="side-section station-panel" aria-labelledby="station-title">
+            <div class="section-title"><h2 id="station-title">역별 도착</h2></div>
+            <form id="station-form">
+                <label class="field-label" for="station">역 이름</label>
+                <div class="field-row">
+                    <input id="station" name="station" placeholder="예: 독산…" list="station-list" required maxlength="60" autocomplete="off" aria-describedby="station-error">
+                    <datalist id="station-list"></datalist>
+                    <button class="primary" type="submit">역 조회</button>
+                </div>
+                <div id="station-error" class="field-error" aria-live="polite"></div>
+            </form>
+            <div id="arrivals" class="results arrivals" aria-live="polite">역을 입력하면 지도에서 해당 역이 확대됩니다.</div>
+        </section>
+        <section class="map-panel" aria-labelledby="map-title">
+            <header class="panel-head">
+                <div class="map-heading"><h2 id="map-title">전체 노선도</h2><span id="network-count" class="muted"></span></div>
+                <div class="map-actions"><button id="mode" type="button" aria-pressed="false">예시 모드</button><button id="refresh" type="button">위치 갱신</button></div>
+            </header>
+            <div id="map-frame" class="map-frame">
+                <canvas id="map" tabindex="0" aria-label="수도권 전철 노선도. 방향키로 이동하고, 역 검색으로 역을 선택할 수 있습니다."></canvas>
+            </div>
+            <div class="map-toolbar">
+                <div class="map-key"><span><i class="train-key" aria-hidden="true"></i> 열차</span><span><i class="station-key" aria-hidden="true"></i> 역</span></div>
+                <button id="motion" type="button" aria-pressed="false">열차 움직임 멈춤</button>
+                <div class="zoom" role="group" aria-label="지도 배율"><button id="zoom-in" aria-label="확대" title="확대" type="button"><i class="zoom-icon plus" aria-hidden="true"></i></button><button id="zoom-out" aria-label="축소" title="축소" type="button"><i class="zoom-icon" aria-hidden="true"></i></button><button id="reset" aria-label="전체 노선 보기" type="button">전체</button></div>
+            </div>
+            <div class="map-footer"><span id="position-note" role="status">노선도를 불러오는 중…</span><a href="https://data.seoul.go.kr/dataList/OA-12601/A/1/datasetView.do" target="_blank" rel="noopener">서울 열린데이터광장</a></div>
+        </section>
+        <aside class="sidebar">
+            <section class="side-section">
+                <div class="section-title"><h2>열차 위치</h2><span id="train-count" class="tabular"></span></div>
+                <label for="line" class="field-label">위치를 표시할 노선</label>
+                <select id="line" name="line"></select>
+                <label class="checkbox"><input type="checkbox" id="focus"> 선택 노선 강조</label>
+                <div id="trains" class="results train-list" aria-live="off"></div>
+            </section>
+            <details class="side-section">
+                <summary>지하철 에이전트에게 질문하기</summary>
+                <div id="agent-panel">
+                    <form id="agent-form" class="field-row">
+                        <input id="question" name="question" autocomplete="off" aria-label="에이전트 질문" placeholder="예: 독산 다음 열차는 언제 와?…" maxlength="240" required>
+                        <button class="primary" type="submit">질문</button>
+                    </form>
+                    <div id="answer" class="results answer" aria-live="polite"></div>
+                </div>
+            </details>
+        </aside>
+    </main>
+</body>
+</html>
