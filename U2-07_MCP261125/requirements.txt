@@ -1,2 +1,5 @@
 mcp[cli]
 fastapi
+httpx
+python-dotenv
+beautifulsoup4
